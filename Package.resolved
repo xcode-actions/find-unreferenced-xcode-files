@@ -32,9 +32,9 @@
         "package": "XcodeTools",
         "repositoryURL": "https://github.com/xcode-actions/XcodeTools.git",
         "state": {
-          "branch": null,
-          "revision": "bddc0186155c612760aeaa7e55d8e8c5681f8880",
-          "version": "0.2.1"
+          "branch": "main",
+          "revision": "04a9b7a73571564c5391894700b2e3a87852d212",
+          "version": null
         }
       }
     ]
