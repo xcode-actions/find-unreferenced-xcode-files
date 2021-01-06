@@ -33,17 +33,21 @@ struct FindUnreferencedXcodeFiles : ParsableCommand {
 		let xcodeprojURL = URL(fileURLWithPath: xcodeprojPath)
 		let xcodeproj = try XcodeProj(xcodeprojURL: xcodeprojURL)
 		
-		var standardBuildSettings = BuildSettings.standardDefaultSettings(xcodprojURL: xcodeprojURL).flattened
-		for name in ["SDKROOT", "BUILT_PRODUCTS_DIR"] {
-			standardBuildSettings[name] = standardBuildSettings[name] ?? "/tmp/DUMMY_" + name
-		}
-		
+		let standardBuildSettings = BuildSettings.standardDefaultSettingsAsDictionary(xcodprojURL: xcodeprojURL)
 		let fileURLs = try xcodeproj.managedObjectContext.performAndWait{ () -> Set<URL> in
 			let fetchRequest: NSFetchRequest<PBXFileElement> = NSFetchRequest(entityName: "PBXFileElement")
 			return try Set(xcodeproj.managedObjectContext.fetch(fetchRequest).compactMap{
-//				if $0.parent == nil && ($0 as? PBXGroup)?.projectForMainGroup == nil {
-//					return nil
-//				}
+				switch $0.sourceTree {
+					case .absolute?, .group?:                                                        (/*nop*/)
+					case .variable(let varName)? where standardBuildSettings.keys.contains(varName): (/*nop*/)
+					case .variable("SDKROOT")?, .variable("BUILT_PRODUCTS_DIR")?:
+						/* We skip these cases without further ado nor logs as we
+						 * cannot get their paths */
+						return nil
+					default:
+						print("warning: skipping file element \($0.xcID ?? "<unknown id>") whose source tree is unknown or uses an unknown variable (source tree = \(String(describing: $0.sourceTree))")
+						return nil
+				}
 				return try $0.resolvedPathAsURL(xcodeprojURL: xcodeprojURL, variables: standardBuildSettings).absoluteURL
 			})
 		}

@@ -13,7 +13,7 @@ let package = Package(
 	dependencies: [
 		.package(url: "https://github.com/apple/swift-argument-parser.git", from: "0.3.1"),
 		.package(url: "https://github.com/Frizlab/stream-reader.git", from: "3.0.0"),
-		.package(url: "https://github.com/xcode-actions/XcodeTools.git", .branch("main"))
+		.package(url: "https://github.com/xcode-actions/XcodeTools.git", from: "0.2.2")
 	],
 	targets: [
 		.target(name: "find-unreferenced-xcode-files", dependencies: [
