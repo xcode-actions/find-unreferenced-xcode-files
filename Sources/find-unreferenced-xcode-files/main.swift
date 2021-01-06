@@ -6,10 +6,10 @@
  * Copyright © 2018 Frizlab. All rights reserved.
  */
 
+import CoreData
 import Foundation
 
 import ArgumentParser
-import CoreData
 import StreamReader
 import SystemPackage
 import XcodeProjKit
@@ -33,22 +33,23 @@ struct FindUnreferencedXcodeFiles : ParsableCommand {
 		let xcodeprojURL = URL(fileURLWithPath: xcodeprojPath)
 		let xcodeproj = try XcodeProj(xcodeprojURL: xcodeprojURL)
 		
-		let standardBuildSettings = BuildSettings.standardDefaultSettingsAsDictionary(xcodprojURL: xcodeprojURL)
+		let standardBuildSettings = try BuildSettings.standardDefaultSettingsAsDictionary(xcodprojURL: xcodeprojURL)
 		let fileURLs = try xcodeproj.managedObjectContext.performAndWait{ () -> Set<URL> in
 			let fetchRequest: NSFetchRequest<PBXFileElement> = NSFetchRequest(entityName: "PBXFileElement")
 			return try Set(xcodeproj.managedObjectContext.fetch(fetchRequest).compactMap{
 				switch $0.sourceTree {
-					case .absolute?, .group?:                                                        (/*nop*/)
-					case .variable(let varName)? where standardBuildSettings.keys.contains(varName): (/*nop*/)
 					case .variable("SDKROOT")?, .variable("BUILT_PRODUCTS_DIR")?:
 						/* We skip these cases without further ado nor logs as we
 						 * cannot get their paths */
 						return nil
 					default:
-						print("warning: skipping file element \($0.xcID ?? "<unknown id>") whose source tree is unknown or uses an unknown variable (source tree = \(String(describing: $0.sourceTree))")
-						return nil
+						(/*nop*/)
 				}
-				return try $0.resolvedPathAsURL(xcodeprojURL: xcodeprojURL, variables: standardBuildSettings).absoluteURL
+				guard let url = try? $0.resolvedPathAsURL(xcodeprojURL: xcodeprojURL, variables: standardBuildSettings).absoluteURL else {
+					print("warning: cannot get path of file element \($0.xcID ?? "<unknown id>")")
+					return nil
+				}
+				return url
 			})
 		}
 //		let fm = FileManager.default

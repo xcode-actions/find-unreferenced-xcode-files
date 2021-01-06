@@ -33,7 +33,7 @@
         "repositoryURL": "https://github.com/xcode-actions/XcodeTools.git",
         "state": {
           "branch": null,
-          "revision": "199662970b5bdf5eec3d8611e202dfb99744734b",
+          "revision": "a8d689f68f7da8cc4a618d368ba687271cdf88e1",
           "version": "0.2.2"
         }
       }
