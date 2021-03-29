@@ -20,5 +20,5 @@ find . \
    -a ! -path "*/.git/*" \
    -a ! -path "*/Carthage/*" \
    -print0 | \
-   find-unreferenced-xcode-files -0 "./$project_name.xcodeproj/project.pbxproj"
+   find-unreferenced-xcode-files -0 "./$project_name.xcodeproj"
 ----
